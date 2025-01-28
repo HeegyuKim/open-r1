@@ -61,6 +61,15 @@ def aime_prompt_fn(line, task_name: str = None):
         gold_index=0,
     )
 
+def HRM8K_KSM_prompt_fn(line, task_name: str = None):
+    answer = line["answer"]
+    return Doc(
+        task_name=task_name,
+        query=line["question"],
+        choices=["\\boxed{" + answer + "}"],
+        gold_index=0,
+    )
+
 
 # Define tasks
 aime24 = LightevalTaskConfig(
@@ -92,10 +101,45 @@ math_500 = LightevalTaskConfig(
     version=1,
 )
 
+HRM8K_KSM = LightevalTaskConfig(
+    name="hrm8k_ksm",
+    suite=["custom"],
+    prompt_function=HRM8K_KSM_prompt_fn,
+    hf_repo="HAERAE-HUB/HRM8K",
+    hf_subset="KSM",
+    hf_avail_splits=["test"],
+    evaluation_splits=["test"],
+    few_shots_split=None,
+    few_shots_select=None,
+    generation_size=32768,
+    metric=[latex_gold_metric],
+    version=1,
+)
+
 # Add tasks to the table
 TASKS_TABLE = []
 TASKS_TABLE.append(aime24)
 TASKS_TABLE.append(math_500)
+TASKS_TABLE.append(HRM8K_KSM)
+
+
+KSM_SPLITS = ["KMS", "KJMO", "KMO", "TQ", "CSAT"]
+for split in KSM_SPLITS:
+    task = LightevalTaskConfig(
+        name=f"hrm8k_ksm_{split.lower()}",
+        suite=["custom"],
+        prompt_function=HRM8K_KSM_prompt_fn,
+        hf_repo="heegyu/HRM8K_KSM",
+        hf_subset="default",
+        hf_avail_splits=[split],
+        evaluation_splits=[split],
+        few_shots_split=None,
+        few_shots_select=None,
+        generation_size=32768,
+        metric=[latex_gold_metric],
+        version=1,
+    )
+    TASKS_TABLE.append(task)
 
 # MODULE LOGIC
 if __name__ == "__main__":
