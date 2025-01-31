@@ -1,0 +1,18 @@
+accelerate launch --config_file=configs/zero2.yaml src/open_r1/sft.py \
+    --model_name_or_path Qwen/Qwen2.5-Math-1.5B-Instruct \
+    --dataset_name HuggingFaceH4/Bespoke-Stratos-17k \
+    --learning_rate 2.0e-5 \
+    --num_train_epochs 1 \
+    --packing \
+    --max_seq_length 4096 \
+    --per_device_train_batch_size 1 \
+    --per_device_eval_batch_size 4 \
+    --gradient_accumulation_steps 16 \
+    --gradient_checkpointing \
+    --bf16 \
+    --use_peft \
+    --lora_target_modules all-linear \
+    --logging_steps 5 \
+    --eval_strategy no \
+    --eval_steps 100 \
+    --output_dir data/Qwen2.5-1.5B-Open-R1-Distill

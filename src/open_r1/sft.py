@@ -35,7 +35,7 @@ accelerate launch --config_file=configs/zero3.yaml src/open_r1/sft.py \
     --output_dir data/Qwen2.5-1.5B-Open-R1-Distill
 """
 
-from datasets import load_dataset
+from datasets import load_dataset, concatenate_datasets, DatasetDict
 from transformers import AutoTokenizer
 
 from trl import (
@@ -73,7 +73,19 @@ def main(script_args, training_args, model_args):
     ################
     # Dataset
     ################
-    dataset = load_dataset(script_args.dataset_name, name=script_args.dataset_config)
+    if "," in script_args.dataset_name:
+        datasets = [load_dataset(ds, name=script_args.dataset_config) for ds in script_args.dataset_name.split(",")]
+        dd = {}
+        for ds in datasets:
+            for k, v in ds.items():
+                if k in dd:
+                    dd[k].append(v)
+                else:
+                    dd[k] = [v]
+        
+        dataset = DatasetDict({k: concatenate_datasets(v) for k, v in dd.items()})
+    else:
+        dataset = load_dataset(script_args.dataset_name, name=script_args.dataset_config)
 
     ################
     # Training

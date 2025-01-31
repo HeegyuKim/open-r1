@@ -65,7 +65,7 @@ def HRM8K_KSM_prompt_fn(line, task_name: str = None):
     answer = line["answer"]
     return Doc(
         task_name=task_name,
-        query=line["question"],
+        query="Return your final response within \\boxed{}. " + line["question"],
         choices=["\\boxed{" + answer + "}"],
         gold_index=0,
     )
